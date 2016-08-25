@@ -11,7 +11,7 @@ ANDROID_PATH=$PWD
 ATMEL_RELEASE=$ANDROID_PATH/device/atmel/release
 ANDROID_PRODUCT=$ANDROID_PATH/out/target/product
 ERRLOGFILE=make_android_sdcard.log
-SD_USERSPACE=64M
+SD_USERSPACE=250M
 SD_STORAGE=1000M
 FORCE_REMOVE=false
 HELP_MESSAGE=("mksd_image -b build_target -s /dev/sdxx [-u uImage_dir] [-d xxxM] --force\n
@@ -210,16 +210,16 @@ do
 					BOARD_ID=SAMA5D3ISI
 					SD_IMAGE_NAME=$BOARD_ID-$ANDROID_VERSION-$RELEASE_VERSION.img
 				;;
-                                "sama5d4" )
-                                        PRODUCT_DEVICE=$1
-                                        BOARD_ID=SAMA5D4
-                                        SD_IMAGE_NAME=$BOARD_ID-$ANDROID_VERSION-$RELEASE_VERSION.img
-                                ;;
+                "sama5d4" )
+                	 PRODUCT_DEVICE=$1
+                     BOARD_ID=SAMA5D4
+                     SD_IMAGE_NAME=$BOARD_ID-$ANDROID_VERSION-$RELEASE_VERSION.img
+                ;;
 				"sama5d2" )
-                                        PRODUCT_DEVICE=$1
-                                        BOARD_ID=SAMA5D2
-                                        SD_IMAGE_NAME=$BOARD_ID-$ANDROID_VERSION-$RELEASE_VERSION.img
-                                ;;
+                	PRODUCT_DEVICE=$1
+                    BOARD_ID=SAMA5D2
+                    SD_IMAGE_NAME=$BOARD_ID-$ANDROID_VERSION-$RELEASE_VERSION.img
+                ;;
 				* )
 					HELP 1;
 				;;
@@ -292,6 +292,11 @@ n
 p
 3
 +
++1024M
+n
+p
+4
++
 +
 w
 end
@@ -299,6 +304,7 @@ sleep 5
 umount "$SDCARD_DEVICE"1
 umount "$SDCARD_DEVICE"2
 umount "$SDCARD_DEVICE"3
+umount "$SDCARD_DEVICE"4
 check_cmd "mkfs.msdos -F 32 "$SDCARD_DEVICE"1"
 check_cmd "mkdir boot -p"
 check_cmd "mount -t vfat "$SDCARD_DEVICE"1 boot"
@@ -312,11 +318,13 @@ check_cmd "umount boot"
 rm_dir boot >&6
 check_cmd "mkfs.ext4 "$SDCARD_DEVICE"2"
 check_cmd "mkfs.ext4 "$SDCARD_DEVICE"3"
+#check_cmd "mkfs.ext4 "$SDCARD_DEVICE"4"
 check_cmd "mkdir root"
 check_cmd "mkdir system"
 check_cmd "mkdir data"
 check_cmd "mount "$SDCARD_DEVICE"2 system"
 check_cmd "mount "$SDCARD_DEVICE"3 data"
+#check_cmd "mount "$SDCARD_DEVICE"4 root"
 check_cmd "cp -a $ANDROID_PRODUCT/$PRODUCT_DEVICE/root/* ./root"
 check_cmd "cp -a $ANDROID_PRODUCT/$PRODUCT_DEVICE/system/* ./system"
 check_cmd "cp -ru $ANDROID_PRODUCT/$PRODUCT_DEVICE/data ./data"
@@ -324,6 +332,7 @@ check_cmd "cp boot_$PRODUCT_DEVICE/init.rc ./root/init.rc"
 check_cmd "sync"
 check_cmd "sudo umount "$SDCARD_DEVICE"2"
 check_cmd "sudo umount "$SDCARD_DEVICE"3"
+#check_cmd "sudo umount "$SDCARD_DEVICE"4"
 check_cmd "rm -rf system data"
 rm_dir ./root >&6
 success_cmd;
